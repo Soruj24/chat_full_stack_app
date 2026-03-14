@@ -174,6 +174,7 @@ app.get("/",(req,res)=>{
     message: "Server is running",
     environment: NODE_ENV,
     timestamp: new Date().toISOString(),
+    error:false,
   })
 })
 
