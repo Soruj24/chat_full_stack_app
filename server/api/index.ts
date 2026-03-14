@@ -1,26 +1,24 @@
-import http from "http";
-import { Server } from "socket.io";
 import app from "../src/app";
-import { registerSocketHandlers } from "../src/socket/socketHandlers";
 import { connectDatabase } from "../src/config/db";
-import { PORT } from "../src/secret";
 
- 
-const server = http.createServer(app);
- 
-export const io = new Server(server, {
-  cors: {
-    origin: [process.env.CLIENT_URL || "http://localhost:3000", "http://localhost:3001", "http://localhost:5173"],
-    methods: ["GET", "POST"],
-    credentials: true
-  },
-  pingTimeout: 60000,
-  pingInterval: 25000,
-  transports: ["websocket", "polling"]
-});
+let dbInit: Promise<void> | null = null;
 
-registerSocketHandlers(io);
-connectDatabase()
-server.listen(PORT, () =>
-  console.log(`🚀 Server running on http://localhost:${PORT}`
-  ));
+async function ensureDatabase() {
+  if (!dbInit) {
+    dbInit = connectDatabase().catch((err) => {
+      console.error("Database initialization failed:", err);
+      dbInit = null;
+      throw err;
+    });
+  }
+  return dbInit;
+}
+
+export default async function handler(req: any, res: any) {
+  try {
+    await ensureDatabase();
+  } catch (_e) {
+    // On DB init failure, still let the request continue so error handler can respond
+  }
+  return app(req, res);
+}

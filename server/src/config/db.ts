@@ -1,13 +1,26 @@
 import mongoose from "mongoose";
 import { mongoUri } from "../secret";
 
-export const connectDatabase = async (): Promise<void> => {
-  try {
-    await mongoose.connect(mongoUri);
+let connectionPromise: Promise<typeof mongoose> | null = null;
 
-    console.log(`✅ MongoDB Connected `);
+export const connectDatabase = async (): Promise<void> => {
+  // 1 = connected, 2 = connecting
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+  if (connectionPromise) {
+    await connectionPromise;
+    return;
+  }
+  try {
+    connectionPromise = mongoose.connect(mongoUri);
+    await connectionPromise;
+    console.log(`✅ MongoDB Connected`);
   } catch (error) {
     console.error("❌ Database connection failed:", error);
-    process.exit(1);
+    // Do not exit in serverless environment; rethrow to let caller decide
+    throw error;
+  } finally {
+    connectionPromise = null;
   }
 };
