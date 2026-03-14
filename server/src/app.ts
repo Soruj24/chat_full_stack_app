@@ -168,6 +168,15 @@ app.get("/api/health", (req: Request, res: Response) => {
   });
 });
 
+
+app.get("/",(req,res)=>{
+  res.json({
+    message: "Server is running",
+    environment: NODE_ENV,
+    timestamp: new Date().toISOString(),
+  })
+})
+
 // --------------------- API Routes ---------------------
 // app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
