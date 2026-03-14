@@ -3,8 +3,7 @@ import { mongoUri } from "../secret";
 
 export const connectDatabase = async (): Promise<void> => {
   try {
-
-      await mongoose.connect(mongoUri);
+    await mongoose.connect(mongoUri);
 
     console.log(`✅ MongoDB Connected `);
   } catch (error) {
