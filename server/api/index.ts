@@ -15,10 +15,8 @@ async function ensureDatabase() {
 }
 
 export default async function handler(req: any, res: any) {
-  try {
-    await ensureDatabase();
-  } catch (_e) {
-    // On DB init failure, still let the request continue so error handler can respond
-  }
+  // Kick off DB connection in background to avoid blocking cold starts/timeouts
+  // Mongoose will buffer model operations until connected.
+  ensureDatabase().catch(() => {});
   return app(req, res);
 }
