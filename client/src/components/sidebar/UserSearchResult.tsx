@@ -85,9 +85,9 @@ export function UserSearchResult({ user }: UserSearchResultProps) {
       <div className="relative w-10 h-10 shrink-0">
         <Image
           src={
-            user.avatar ||
-            "https://ui-avatars.com/api/?name=" +
-              encodeURIComponent(user.name || "User")
+            (user.avatar && user.avatar.trim() !== "")
+              ? user.avatar
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}`
           }
           alt={user.name || "User avatar"}
           fill

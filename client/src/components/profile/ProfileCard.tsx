@@ -20,8 +20,12 @@ export function ProfileCard({ user }: ProfileCardProps) {
       <div className="p-8 flex flex-col items-center text-center">
         <div className="relative w-32 h-32 mb-4">
           <Image
-            src={user.avatar}
-            alt={user.name}
+            src={
+              (user.avatar && user.avatar.trim() !== "")
+                ? user.avatar
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}`
+            }
+            alt={user.name || "User profile picture"}
             fill
             unoptimized
             className="rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"

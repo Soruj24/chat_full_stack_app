@@ -22,13 +22,19 @@ export function ChatInfoMediaPreview({ allMedia, onViewAll }: ChatInfoMediaPrevi
       <div className="grid grid-cols-3 gap-2">
         {allMedia.slice(0, 6).map((item) => (
           <div key={item.id} className="relative aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity border border-gray-100 dark:border-gray-800">
-            <Image
-              src={item.url}
-              alt=""
-              fill
-              unoptimized
-              className="object-cover"
-            />
+            {item.url ? (
+              <Image
+                src={item.url}
+                alt=""
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-800 text-gray-400">
+                <span className="text-[10px]">No image</span>
+              </div>
+            )}
           </div>
         ))}
       </div>

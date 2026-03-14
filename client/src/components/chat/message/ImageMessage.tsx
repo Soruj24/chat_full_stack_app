@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { Message } from "@/lib/types";
 import { MessageStatus } from "./MessageStatus";
-import { Star, Pin } from "lucide-react";
+import { Star, Pin, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ImageMessageProps {
@@ -22,7 +22,16 @@ export function ImageMessage({
   bubbleStyle = 'modern',
 }: ImageMessageProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const url = message.mediaUrl || "";
+  const url = message.mediaUrl;
+
+  if (!url || url.trim() === "") {
+    return (
+      <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center gap-2 text-gray-500">
+        <ImageIcon className="w-5 h-5" />
+        <span className="text-sm">Image not available</span>
+      </div>
+    );
+  }
 
   return (
     <div className={cn(

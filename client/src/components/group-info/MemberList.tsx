@@ -38,7 +38,11 @@ export function MemberList({ members }: MemberListProps) {
           >
             <div className="relative w-10 h-10 flex-shrink-0">
               <Image
-                src={member.avatar}
+                src={
+                  (member.avatar && member.avatar.trim() !== "")
+                    ? member.avatar
+                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || "User")}`
+                }
                 alt={member.name || "Member avatar"}
                 fill
                 unoptimized

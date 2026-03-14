@@ -21,8 +21,12 @@ export function GroupCard({ chat }: GroupCardProps) {
         <div className="relative">
           <div className="relative w-32 h-32 mb-4">
             <Image
-              src={chat.avatar}
-              alt={chat.name}
+              src={
+                (chat.avatar && chat.avatar.trim() !== "")
+                  ? chat.avatar
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.name || "Group")}`
+              }
+              alt={chat.name || "Group avatar"}
               fill
               unoptimized
               className="rounded-3xl object-cover border-4 border-white dark:border-gray-800 shadow-lg"
