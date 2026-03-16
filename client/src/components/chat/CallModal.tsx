@@ -1,27 +1,43 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, Video, Mic, MicOff, VideoOff, PhoneOff, User, Maximize2, Minimize2 } from "lucide-react";
+import {
+  Phone,
+  Video,
+  Mic,
+  MicOff,
+  VideoOff,
+  PhoneOff,
+  User,
+  Maximize2,
+  Minimize2,
+} from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { toast } from "react-hot-toast";
-import { endCall, toggleMic, toggleCamera, acceptCall, updateCallType } from "@/store/slices/callSlice";
+import {
+  endCall,
+  toggleMic,
+  toggleCamera,
+  acceptCall,
+  updateCallType,
+} from "@/store/slices/callSlice";
 import { cn } from "@/lib/utils";
 import { webrtcService } from "@/lib/webrtc/webrtc-service";
 import { socketService } from "@/lib/socket/socket-client";
 
 export function CallModal() {
   const dispatch = useDispatch();
-  const { 
-    isCallModalOpen, 
-    callType, 
-    callStatus, 
-    remoteUser, 
-    isMicMuted, 
+  const {
+    isCallModalOpen,
+    callType,
+    callStatus,
+    remoteUser,
+    isMicMuted,
     isCameraOff,
-    callStartTime 
+    callStartTime,
   } = useSelector((state: RootState) => state.call);
   const { user } = useSelector((state: RootState) => state.auth);
 
@@ -32,6 +48,22 @@ export function CallModal() {
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
+
+  // Helper function to safely get avatar source
+  const getAvatarSrc = () => {
+    if (!remoteUser) return `https://ui-avatars.com/api/?name=User`;
+
+    // Check if avatar exists and is a non-empty string
+    if (
+      remoteUser.avatar &&
+      typeof remoteUser.avatar === "string" &&
+      remoteUser.avatar.trim() !== ""
+    ) {
+      return remoteUser.avatar;
+    }
+    // Fallback to UI Avatars
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(remoteUser.name || "User")}`;
+  };
 
   useEffect(() => {
     if (remoteStream) {
@@ -46,11 +78,13 @@ export function CallModal() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (callStatus === 'connected' && callStartTime) {
+    if (callStatus === "connected" && callStartTime) {
       interval = setInterval(() => {
         const diff = Math.floor((Date.now() - callStartTime) / 1000);
-        const mins = Math.floor(diff / 60).toString().padStart(2, '0');
-        const secs = (diff % 60).toString().padStart(2, '0');
+        const mins = Math.floor(diff / 60)
+          .toString()
+          .padStart(2, "0");
+        const secs = (diff % 60).toString().padStart(2, "0");
         setCallDuration(`${mins}:${secs}`);
       }, 1000);
     }
@@ -61,8 +95,8 @@ export function CallModal() {
     if (isCallModalOpen) {
       const setupCall = async () => {
         setErrorMessage(null);
-        const stream = await webrtcService.getLocalStream(callType === 'video');
-        
+        const stream = await webrtcService.getLocalStream(callType === "video");
+
         if (!stream) {
           const msg = "Microphone not found";
           setErrorMessage(msg);
@@ -72,19 +106,25 @@ export function CallModal() {
 
         // If video was requested but only audio is available
         const hasVideo = stream.getVideoTracks().length > 0;
-        if (callType === 'video' && !hasVideo) {
-          console.log("Video requested but camera not found, falling back to audio UI");
-          dispatch(updateCallType('audio'));
+        if (callType === "video" && !hasVideo) {
+          console.log(
+            "Video requested but camera not found, falling back to audio UI",
+          );
+          dispatch(updateCallType("audio"));
         }
 
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
         }
 
-        if (callStatus === 'calling' && remoteUser && user?.id) {
+        if (callStatus === "calling" && remoteUser && user?.id) {
           console.log("Initiating peer for outgoing call to:", remoteUser.id);
-          const peer = webrtcService.createPeer(remoteUser.id, stream!, user.id);
-          
+          const peer = webrtcService.createPeer(
+            remoteUser.id,
+            stream!,
+            user.id,
+          );
+
           peer.on("stream", (stream) => {
             console.log("Received remote stream (outgoing call)");
             setRemoteStream(stream);
@@ -126,8 +166,8 @@ export function CallModal() {
   const handleAcceptCall = async () => {
     setErrorMessage(null);
     console.log("Accepting incoming call from:", remoteUser.id);
-    const stream = await webrtcService.getLocalStream(callType === 'video');
-    
+    const stream = await webrtcService.getLocalStream(callType === "video");
+
     if (!stream) {
       const msg = "Microphone not found";
       setErrorMessage(msg);
@@ -137,18 +177,26 @@ export function CallModal() {
 
     // If video was requested but only audio is available
     const hasVideo = stream.getVideoTracks().length > 0;
-    if (callType === 'video' && !hasVideo) {
-      console.log("Video requested but camera not found, falling back to audio UI");
-      dispatch(updateCallType('audio'));
+    if (callType === "video" && !hasVideo) {
+      console.log(
+        "Video requested but camera not found, falling back to audio UI",
+      );
+      dispatch(updateCallType("audio"));
     }
 
     if (localVideoRef.current) {
       localVideoRef.current.srcObject = stream;
     }
-    
-    const incomingSignal = (window as unknown as { incomingSignal?: RTCSessionDescriptionInit }).incomingSignal;
+
+    const incomingSignal = (
+      window as unknown as { incomingSignal?: RTCSessionDescriptionInit }
+    ).incomingSignal;
     if (incomingSignal) {
-      const peer = webrtcService.answerPeer(incomingSignal, remoteUser.id, stream!);
+      const peer = webrtcService.answerPeer(
+        incomingSignal,
+        remoteUser.id,
+        stream!,
+      );
       peer.on("stream", (stream) => {
         console.log("Received remote stream (incoming call)");
         setRemoteStream(stream);
@@ -164,14 +212,14 @@ export function CallModal() {
       exit={{ opacity: 0, scale: 0.9, y: 20 }}
       className={cn(
         "fixed z-[200] bg-gray-900 text-white shadow-2xl transition-all duration-300 overflow-hidden",
-        isMaximized 
-          ? "inset-0 rounded-0" 
-          : "bottom-4 right-4 w-[350px] h-[500px] rounded-3xl border border-gray-800"
+        isMaximized
+          ? "inset-0 rounded-0"
+          : "bottom-4 right-4 w-[350px] h-[500px] rounded-3xl border border-gray-800",
       )}
     >
       {/* Background/Video Area */}
       <div className="absolute inset-0 z-0">
-        {(callType === 'video' && callStatus === 'connected') ? (
+        {callType === "video" && callStatus === "connected" ? (
           <div className="relative w-full h-full bg-black">
             <video
               ref={remoteVideoRef}
@@ -194,24 +242,23 @@ export function CallModal() {
           <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-gray-800 to-gray-900">
             <div className="relative w-32 h-32 mb-6">
               <Image
-                src={
-                  remoteUser.avatar && remoteUser.avatar.trim() !== ""
-                    ? remoteUser.avatar
-                    : "https://ui-avatars.com/api/?name=" +
-                      encodeURIComponent(remoteUser.name || "User")
-                }
+                src={getAvatarSrc()}
                 alt={remoteUser.name}
                 fill
                 unoptimized
                 className="rounded-full object-cover ring-4 ring-blue-500/30"
               />
-              {(callStatus === 'calling' || callStatus === 'incoming') && (
+              {(callStatus === "calling" || callStatus === "incoming") && (
                 <div className="absolute inset-[-8px] border-2 border-blue-500 rounded-full animate-ping opacity-20" />
               )}
             </div>
             <h2 className="text-2xl font-bold mb-1">{remoteUser.name}</h2>
             <div className="flex items-center gap-2 mb-2">
-              {callType === 'video' ? <Video className="w-4 h-4 text-blue-400" /> : <Phone className="w-4 h-4 text-blue-400" />}
+              {callType === "video" ? (
+                <Video className="w-4 h-4 text-blue-400" />
+              ) : (
+                <Phone className="w-4 h-4 text-blue-400" />
+              )}
               <span className="text-sm text-blue-400 uppercase tracking-wider font-semibold">
                 {callType} Call
               </span>
@@ -222,9 +269,13 @@ export function CallModal() {
               </p>
             ) : (
               <p className="text-blue-400 font-medium animate-pulse">
-                {callStatus === 'calling' ? 'Calling...' : 
-                 callStatus === 'incoming' ? 'Incoming Call...' : 
-                 callStatus === 'connected' ? callDuration : 'Call Ended'}
+                {callStatus === "calling"
+                  ? "Calling..."
+                  : callStatus === "incoming"
+                    ? "Incoming Call..."
+                    : callStatus === "connected"
+                      ? callDuration
+                      : "Call Ended"}
               </p>
             )}
           </div>
@@ -233,13 +284,17 @@ export function CallModal() {
 
       {/* Top Controls */}
       <div className="absolute top-0 inset-x-0 p-4 flex items-center justify-between z-20 bg-gradient-to-b from-black/50 to-transparent">
-        <button 
+        <button
           onClick={() => setIsMaximized(!isMaximized)}
           className="p-2 hover:bg-white/10 rounded-full transition-colors"
         >
-          {isMaximized ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+          {isMaximized ? (
+            <Minimize2 className="w-5 h-5" />
+          ) : (
+            <Maximize2 className="w-5 h-5" />
+          )}
         </button>
-        {callType === 'video' && callStatus === 'connected' && (
+        {callType === "video" && callStatus === "connected" && (
           <div className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-sm font-medium">
             {callDuration}
           </div>
@@ -250,7 +305,7 @@ export function CallModal() {
       {/* Bottom Controls */}
       <div className="absolute bottom-0 inset-x-0 p-8 z-20 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
         <div className="flex items-center justify-center gap-10">
-          {callStatus === 'incoming' ? (
+          {callStatus === "incoming" ? (
             <>
               <div className="flex flex-col items-center gap-3">
                 <button
@@ -259,9 +314,11 @@ export function CallModal() {
                 >
                   <PhoneOff className="w-7 h-7 text-white" />
                 </button>
-                <span className="text-xs font-semibold text-gray-300 uppercase tracking-widest">Decline</span>
+                <span className="text-xs font-semibold text-gray-300 uppercase tracking-widest">
+                  Decline
+                </span>
               </div>
-              
+
               <div className="flex flex-col items-center gap-3">
                 <button
                   onClick={handleAcceptCall}
@@ -269,7 +326,9 @@ export function CallModal() {
                 >
                   <Phone className="w-7 h-7 text-white" />
                 </button>
-                <span className="text-xs font-semibold text-gray-300 uppercase tracking-widest">Accept</span>
+                <span className="text-xs font-semibold text-gray-300 uppercase tracking-widest">
+                  Accept
+                </span>
               </div>
             </>
           ) : (
@@ -278,12 +337,18 @@ export function CallModal() {
                 onClick={() => dispatch(toggleMic())}
                 className={cn(
                   "w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95",
-                  isMicMuted ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20 text-white"
+                  isMicMuted
+                    ? "bg-red-500/20 text-red-500"
+                    : "bg-white/10 hover:bg-white/20 text-white",
                 )}
               >
-                {isMicMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                {isMicMuted ? (
+                  <MicOff className="w-5 h-5" />
+                ) : (
+                  <Mic className="w-5 h-5" />
+                )}
               </button>
-              
+
               <button
                 onClick={handleEndCall}
                 className="w-16 h-16 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-lg shadow-red-500/30"
@@ -295,10 +360,16 @@ export function CallModal() {
                 onClick={() => dispatch(toggleCamera())}
                 className={cn(
                   "w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95",
-                  isCameraOff ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20 text-white"
+                  isCameraOff
+                    ? "bg-red-500/20 text-red-500"
+                    : "bg-white/10 hover:bg-white/20 text-white",
                 )}
               >
-                {isCameraOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
+                {isCameraOff ? (
+                  <VideoOff className="w-5 h-5" />
+                ) : (
+                  <Video className="w-5 h-5" />
+                )}
               </button>
             </>
           )}

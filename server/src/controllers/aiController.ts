@@ -5,9 +5,9 @@ import { AuthRequest } from "../types";
 import { successResponse } from "./responsControllers";
 import createHttpError from "http-errors";
 
-/**
- * Handle AI assistant chat requests
- */
+ 
+  // Handle AI assistant chat requests
+  
 export const handleAiChat = asyncHandler(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     const { message } = req.body;

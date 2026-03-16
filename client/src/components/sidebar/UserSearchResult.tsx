@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { User, MessageSquare } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { addChat, setActiveChat } from "@/store/slices/chatSlice";
@@ -77,6 +77,16 @@ export function UserSearchResult({ user }: UserSearchResultProps) {
     }
   };
 
+  // Safely check if avatar exists and is a non-empty string
+  const getAvatarSrc = () => {
+    // Check if avatar exists and is a string with content
+    if (user.avatar && typeof user.avatar === 'string' && user.avatar.trim() !== '') {
+      return user.avatar;
+    }
+    // Fallback to UI Avatars
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}`;
+  };
+
   return (
     <div
       onClick={handleStartChat}
@@ -84,11 +94,7 @@ export function UserSearchResult({ user }: UserSearchResultProps) {
     >
       <div className="relative w-10 h-10 shrink-0">
         <Image
-          src={
-            (user.avatar && user.avatar.trim() !== "")
-              ? user.avatar
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}`
-          }
+          src={getAvatarSrc()}
           alt={user.name || "User avatar"}
           fill
           unoptimized

@@ -1,11 +1,10 @@
 "use client";
 
 import Image from "next/image";
-
 import { UserStatus } from "@/lib/types";
 
 interface ChatAvatarProps {
-  avatar: string;
+  avatar?: string | null;
   name: string;
   status?: UserStatus;
 }
@@ -18,9 +17,12 @@ export function ChatAvatar({ avatar, name, status }: ChatAvatarProps) {
     .toUpperCase()
     .slice(0, 2);
 
+  const hasAvatar =
+    typeof avatar === "string" && avatar.trim().length > 0;
+
   return (
     <div className="relative flex-shrink-0 w-12 h-12">
-      {avatar ? (
+      {hasAvatar ? (
         <Image
           src={avatar}
           alt={name || "Chat avatar"}
@@ -33,9 +35,11 @@ export function ChatAvatar({ avatar, name, status }: ChatAvatarProps) {
           {initials}
         </div>
       )}
+
       {status === "online" && (
         <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full z-10 shadow-sm" />
       )}
+
       {status === "typing" && (
         <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-blue-500 border-2 border-white dark:border-gray-900 rounded-full animate-pulse z-10 shadow-sm" />
       )}

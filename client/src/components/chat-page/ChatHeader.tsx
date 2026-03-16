@@ -63,6 +63,21 @@ export function ChatHeader({
       }),
     );
   };
+
+  // Helper function to safely get avatar source
+  const getAvatarSrc = () => {
+    // Check if avatar exists and is a non-empty string
+    if (
+      chat.avatar &&
+      typeof chat.avatar === "string" &&
+      chat.avatar.trim() !== ""
+    ) {
+      return chat.avatar;
+    }
+    // Fallback to UI Avatars
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.name || "Chat")}`;
+  };
+
   return (
     <header className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 p-2.5 md:p-3 flex items-center justify-between z-20">
       <div className="flex items-center gap-2 md:gap-3 min-w-0">
@@ -74,22 +89,23 @@ export function ChatHeader({
         </Link>
         <div className="relative w-9 h-9 md:w-10 md:h-10">
           <Image
-            src={
-              chat.avatar && chat.avatar.trim() !== ""
-                ? chat.avatar
-                : "https://ui-avatars.com/api/?name=" +
-                  encodeURIComponent(chat.name || "Chat")
-            }
+            src={getAvatarSrc()}
             alt={chat.name}
             fill
             unoptimized
             className="rounded-full shadow-sm object-cover"
-            style={chat.themeColor ? { boxShadow: `0 0 0 2px ${chat.themeColor}` } : {}}
+            style={
+              chat.themeColor
+                ? { boxShadow: `0 0 0 2px ${chat.themeColor}` }
+                : {}
+            }
           />
           {isOnline && (
-            <div 
-              className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full z-10" 
-              style={chat.themeColor ? { backgroundColor: chat.themeColor } : {}}
+            <div
+              className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full z-10"
+              style={
+                chat.themeColor ? { backgroundColor: chat.themeColor } : {}
+              }
             />
           )}
         </div>
@@ -113,7 +129,11 @@ export function ChatHeader({
                     "text-[11px] md:text-xs font-medium",
                     isOnline ? "text-green-600" : "text-gray-500",
                   )}
-                  style={isOnline && chat.themeColor ? { color: chat.themeColor } : {}}
+                  style={
+                    isOnline && chat.themeColor
+                      ? { color: chat.themeColor }
+                      : {}
+                  }
                 >
                   {isOnline ? "Online" : "Offline"}
                 </p>
@@ -132,7 +152,14 @@ export function ChatHeader({
               ? "bg-blue-50 dark:bg-blue-900/30 text-blue-500"
               : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500",
           )}
-          style={isSearchOpen && chat.themeColor ? { backgroundColor: `${chat.themeColor}20`, color: chat.themeColor } : {}}
+          style={
+            isSearchOpen && chat.themeColor
+              ? {
+                  backgroundColor: `${chat.themeColor}20`,
+                  color: chat.themeColor,
+                }
+              : {}
+          }
         >
           <Search className="w-5 h-5" />
         </button>

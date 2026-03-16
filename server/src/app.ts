@@ -78,7 +78,7 @@ app.use(
     ],
     exposedHeaders: ["Set-Cookie"],
     optionsSuccessStatus: 204,
-  })
+  }),
 );
 
 // --------------------- Trust Proxy (for production behind reverse proxy) ---------------------
@@ -91,13 +91,13 @@ app.use(
     contentSecurityPolicy: NODE_ENV === "production" ? undefined : false,
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
-  })
+  }),
 );
 
 app.use(
   express.json({
     limit: "10mb",
-  })
+  }),
 );
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(compression());
@@ -168,8 +168,6 @@ app.get("/api/health", (req: Request, res: Response) => {
   });
 });
 
-
-
 // --------------------- API Routes ---------------------
 // app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
@@ -195,17 +193,18 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
+
 app.use((req: Request, res: Response, next: NextFunction) => {
   const error = createError(404, `Route ${req.originalUrl} not found`);
   next(error);
 });
 
-// --------------------- Error handler ---------------------
+// ---------------------- Error handler ---------------------
 const errorHandler: ErrorRequestHandler = (
   err: HttpError,
   req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ) => {
   if (NODE_ENV !== "test") {
     console.error(`Error ${err.status || 500}: ${err.message}`);
