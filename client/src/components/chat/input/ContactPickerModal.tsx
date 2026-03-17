@@ -94,7 +94,7 @@ export function ContactPickerModal({
                     className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-xl transition-colors text-left"
                   >
                     <div className="relative">
-                      {chat.avatar ? (
+                      {chat.avatar && chat.avatar.length > 0 ? (
                         <Image
                           src={chat.avatar}
                           alt={chat.name}

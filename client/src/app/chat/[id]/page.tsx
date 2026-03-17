@@ -218,9 +218,12 @@ export default function ChatPage() {
     }
   };
 
-  const handleDelete = async (message: { id: string }) => {
-    await handleDeleteMessage(message.id, () => {
-      setLocalMessages((prev) => prev.filter((m) => m.id !== message.id));
+  const handleDelete = async (message: { id?: string; _id?: string }) => {
+    const messageId = message.id || message._id;
+    if (!messageId) return;
+    
+    await handleDeleteMessage(messageId, () => {
+      setLocalMessages((prev) => prev.filter((m) => m.id !== messageId));
       setContextMenu(null);
     });
   };

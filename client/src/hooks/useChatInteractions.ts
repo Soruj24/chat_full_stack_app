@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store/store";
-import { updateChat } from "@/store/slices/chatSlice";
+import { updateChat, removeMessage } from "@/store/slices/chatSlice";
 import { updateUser } from "@/store/slices/authSlice";
 import { socketService } from "@/lib/socket/socket-client";
 import { Message } from "@/lib/types";
@@ -131,6 +131,7 @@ export function useChatInteractions(chatId?: string) {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
+        dispatch(removeMessage({ chatId: validChatId, messageId }));
         if (callback) callback();
 
         // Emit socket event for real-time sync

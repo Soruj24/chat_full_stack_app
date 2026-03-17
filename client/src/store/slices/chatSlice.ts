@@ -109,6 +109,12 @@ const chatSlice = createSlice({
     removeChat: (state, action: PayloadAction<string>) => {
       state.chats = state.chats.filter((c) => c.id !== action.payload);
     },
+    removeMessage: (state, action: PayloadAction<{ chatId: string; messageId: string }>) => {
+      const { chatId, messageId } = action.payload;
+      if (state.messages[chatId]) {
+        state.messages[chatId] = state.messages[chatId].filter((m) => m.id !== messageId);
+      }
+    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
@@ -128,6 +134,7 @@ export const {
   updateChat,
   setTypingStatus,
   removeChat,
+  removeMessage,
   setLoading,
   setError,
 } = chatSlice.actions;

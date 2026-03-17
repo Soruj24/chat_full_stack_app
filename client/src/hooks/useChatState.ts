@@ -229,8 +229,18 @@ export function useChatState(
       );
     };
 
-    const handleMessageDelete = ({ messageId }: { messageId: string }) => {
-      setLocalMessages((prev) => prev.filter((m) => m.id !== messageId));
+    const handleMessageDelete = ({
+      chatId,
+      messageId,
+    }: {
+      chatId: string;
+      messageId: string;
+    }) => {
+      if (chatId === chat?.id) {
+        setLocalMessages((prev) => prev.filter((m) => m.id !== messageId));
+        // removeMessage is not imported/defined; just update local state
+        // dispatch(removeMessage({ chatId, messageId }));
+      }
     };
 
     socketService.on("message_pin", handleMessagePin);
@@ -293,7 +303,10 @@ export function useChatState(
       socketService.off("receive_message", handleReceiveMessage);
       socketService.off("user_typing", handleTyping);
       socketService.off("message_reaction", handleMessageReaction);
-      socketService.off("new_message_notification", handleNewMessageNotification);
+      socketService.off(
+        "new_message_notification",
+        handleNewMessageNotification,
+      );
       socketService.off("message_pin", handleMessagePin);
       socketService.off("message_delete", handleMessageDelete);
       socketService.off("message_status_update", handleMessageStatusUpdate);
@@ -487,15 +500,19 @@ export function useChatState(
             (chat.type === "private" || chat.type === "individual") &&
             Array.isArray(chat.members)
               ? (() => {
-                  const other = chat.members.find((m: { id?: string; _id?: string } | string) => {
-                    const mid =
-                      typeof m === "string"
-                        ? m
-                        : (m._id || m.id || "").toString();
-                    return mid !== (user?.id || "me");
-                  });
+                  const other = chat.members.find(
+                    (m: { id?: string; _id?: string } | string) => {
+                      const mid =
+                        typeof m === "string"
+                          ? m
+                          : (m._id || m.id || "").toString();
+                      return mid !== (user?.id || "me");
+                    },
+                  );
                   if (!other) return undefined;
-                  return typeof other === "string" ? other : other._id || other.id;
+                  return typeof other === "string"
+                    ? other
+                    : other._id || other.id;
                 })()
               : undefined;
 
@@ -605,10 +622,13 @@ export function useChatState(
           throw new Error(errorData.error || "Upload failed");
         }
         const resData = await uploadResponse.json();
-        const uploadData = resData.payload?.document || resData.payload || resData; // Support both formats
+        const uploadData =
+          resData.payload?.document || resData.payload || resData; // Support both formats
         const finalMediaUrl = uploadData.fileUrl || uploadData.url;
         const finalFileName = uploadData.fileName || file.name;
-        const finalFileSize = uploadData.fileSize ? formatFileSize(uploadData.fileSize) : formatFileSize(file.size);
+        const finalFileSize = uploadData.fileSize
+          ? formatFileSize(uploadData.fileSize)
+          : formatFileSize(file.size);
 
         // 2. Send the message with the final URL
         const response = await fetch("/api/messages", {

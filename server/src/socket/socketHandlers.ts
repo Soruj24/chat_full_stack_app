@@ -52,7 +52,7 @@ export function registerSocketHandlers(io: Server) {
       socket.to(chatId).emit("message_pin", { messageId, isPinned });
     });
     socket.on("message_delete", ({ chatId, messageId }) => {
-      socket.to(chatId).emit("message_delete", { messageId });
+      socket.to(chatId).emit("message_delete", { chatId, messageId });
     });
     socket.on("new_chat", ({ chat, participants }) => {
       if (participants && Array.isArray(participants)) {
